@@ -1,17 +1,17 @@
-const Recipe = require("./recipeModel");
+const Recipe = require("../models/recipeModel");
 
-exports.createRecipe = async(req, res) => {
+exports.createRecipe = async (req, res) => {
   try {
-  //   const newRecipe = new Recipe({
-  //     name: req.body.name,
-  //     description: req.body.description,
-  //     duration: req.body.duration,
-  //     difficulty: req.body.difficulty,
-  //     ingredients: req.body.ingredients,
-  //     cuisine: req.body.cuisine,
-  //     steps: req.body.steps
-  //   });
-  // await newRecipe.save()
+    //   const newRecipe = new Recipe({
+    //     name: req.body.name,
+    //     description: req.body.description,
+    //     duration: req.body.duration,
+    //     difficulty: req.body.difficulty,
+    //     ingredients: req.body.ingredients,
+    //     cuisine: req.body.cuisine,
+    //     steps: req.body.steps
+    //   });
+    // await newRecipe.save()
 
     const newRecipe = await Recipe.create({
       name: req.body.name,
@@ -20,7 +20,8 @@ exports.createRecipe = async(req, res) => {
       difficulty: req.body.difficulty,
       ingredients: req.body.ingredients,
       cuisine: req.body.cuisine,
-      steps: req.body.steps
+      steps: req.body.steps,
+      owner: req.user._id // important
     });
 
     //   .then(result => {
@@ -46,8 +47,8 @@ exports.getAll = async (req, res) => {
   try {
     const queryObj = { ...req.query };
     const recipes = await Recipe.find(queryObj);
-    if(!recipes){
-      return res.status(404).send('Element not found')
+    if (!recipes) {
+      return res.status(404).send("Element not found");
     }
     res.status(200).json({
       status: "success",
@@ -69,6 +70,8 @@ exports.getById = async (req, res) => {
     if (!recipe) {
       return res.status(404).send(`not found`);
     }
+    await recipe.populate("owner").execPopulate();
+
     res.status(200).json({
       status: "success",
       result: recipe.length,
@@ -99,7 +102,7 @@ exports.update = async (req, res) => {
     }
     const id = req.params.id;
     const recipe = await Recipe.findByIdAndUpdate(id, req.body, {
-      new: true,
+      new: true, // important
       runValidators: true
     });
     if (!recipe) {

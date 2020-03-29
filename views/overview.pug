@@ -1,0 +1,16 @@
+extends base
+
+block content
+  main.main
+    .card-container
+    
+      each recipe in recipes
+        .card
+          .card__header
+            .card__picture
+              .card__picture-overlay &nbsp;
+              img.card__picture-img(src=`/img/tours/${recipe.imageCover}`, alt=`${recipe.name}`)
+            h3.heading-tertirary
+              span= recipe.name
+            
+
