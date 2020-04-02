@@ -18,24 +18,24 @@ const userSchema = new mongoose.Schema({
     unique: true,
     lowercase: true,
     trim: true,
-    validate(value) {
-      if (!validator.isEmail(value)) {
-        throw new Error("Invalid email");
-      }
-    }
+    validate: [validator.isEmail, "Invalid email"]
   },
   password: {
     type: String,
     required: [true, "A user needs a password"],
     lowercase: true,
     trim: true,
-    //minlength: 8,
+    minlength: 8,
     validate(value) {
       if (value.toLowerCase().includes("password")) {
         throw new Error('password cant contain "password"');
       }
     }
   },
+  // passwordConfirm: {
+  //   type: String,
+  //   required: true
+  // },
   tokens: [
     {
       token: {
@@ -44,6 +44,16 @@ const userSchema = new mongoose.Schema({
       }
     }
   ]
+});
+
+userSchema.pre("save", async function(next) {
+  const user = this;
+
+  if (user.isModified("password")) {
+    user.password = await bcrypt.hash(user.password, 12);
+  }
+  //user.passwordConfirm = undefined;
+  next();
 });
 
 userSchema.virtual("recipes", {
@@ -75,14 +85,6 @@ userSchema.statics.findByCredentials = async (email, password) => {
   return user;
 };
 
-userSchema.pre("save", async function(next) {
-  const user = this;
-
-  if (user.isModified("password")) {
-    user.password = await bcrypt.hash(user.password, 12);
-  }
-  next();
-});
 const User = new mongoose.model("User", userSchema);
 
 module.exports = User;

@@ -23,7 +23,6 @@ exports.createRecipe = async (req, res) => {
       steps: req.body.steps,
       owner: req.user._id // important
     });
-
     //   .then(result => {
     //     console.log(result);
     //   })
@@ -46,7 +45,15 @@ exports.createRecipe = async (req, res) => {
 exports.getAll = async (req, res) => {
   try {
     const queryObj = { ...req.query };
-    const recipes = await Recipe.find(queryObj);
+    const excludedFields = ["limit", "sort", "page", "fields"]; // on se limite qu'aux propriétés de chaque recette
+    excludedFields.forEach(el => delete queryObj[el]); // parce que eux ils demandent tous les élements donc ça va pas ensemble avec queryObj qui rend un élément
+    let query = Recipe.find(queryObj); // bien préciser le 'let' (souvent suivi d'un 'if')
+    if (req.query.sort) {
+      const sortBy = req.query.sort.split(",").join(" ");
+      query = query.sort(sortBy);
+    }
+    const recipes = await query;
+    console.log(queryObj);
     if (!recipes) {
       return res.status(404).send("Element not found");
     }

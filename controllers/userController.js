@@ -2,7 +2,8 @@ const User = require("../models/userModel");
 
 exports.getAll = async (req, res) => {
   try {
-    const users = await User.find({});
+    const queryObj = { ...req.query };
+    const users = await User.find({ queryObj });
     res.status(200).json({
       status: "success",
       users
