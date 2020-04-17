@@ -8,7 +8,7 @@ const recipeSchema = new mongoose.Schema(
       required: true,
       unique: true,
       trim: true,
-      lowercase: true
+      lowercase: true,
     },
     cuisine: {
       type: String,
@@ -21,8 +21,8 @@ const recipeSchema = new mongoose.Schema(
         "american",
         "indian",
         "chinese",
-        "japanese"
-      ]
+        "japanese",
+      ],
     },
     description: {
       type: String,
@@ -30,33 +30,33 @@ const recipeSchema = new mongoose.Schema(
       trim: true,
       lowercase: true,
       minlength: 10,
-      maxlength: 255
+      maxlength: 255,
     },
     ingredients: {
       type: [String],
       required: [true, "Ingredients are needed for a recipe"],
-      trim: true
+      trim: true,
     },
     steps: {
       type: String,
-      minlength: 50
+      minlength: 50,
     },
     duration: {
-      type: Number
+      type: Number,
     },
     difficulty: {
       type: String,
       required: [true, "The level of difficulty is required"],
       enum: ["easy", "medium", "difficult"],
-      lowercase: true
+      lowercase: true,
     },
-    owner: {
+    user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User"
-    }
+      ref: "User",
+    },
   },
   {
-    timestamps: true //créé à modifié à
+    timestamps: true,
   }
 );
 

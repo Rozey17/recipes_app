@@ -1,4 +1,4 @@
-const Recipe = require("../models/recipeModel");
+const Recipe = require("./recipeModel");
 
 exports.createRecipe = async (req, res) => {
   try {
@@ -21,8 +21,9 @@ exports.createRecipe = async (req, res) => {
       ingredients: req.body.ingredients,
       cuisine: req.body.cuisine,
       steps: req.body.steps,
-      owner: req.user._id // important
+      user: req.user._id,
     });
+
     //   .then(result => {
     //     console.log(result);
     //   })
@@ -32,12 +33,12 @@ exports.createRecipe = async (req, res) => {
 
     res.status(201).json({
       status: "success",
-      recipe: { newRecipe }
+      recipe: { newRecipe },
     });
   } catch (error) {
     res.status(401).json({
       result: "fail",
-      data: { error }
+      data: { error },
     });
   }
 };
@@ -45,27 +46,30 @@ exports.createRecipe = async (req, res) => {
 exports.getAll = async (req, res) => {
   try {
     const queryObj = { ...req.query };
-    const excludedFields = ["limit", "sort", "page", "fields"]; // on se limite qu'aux propriétés de chaque recette
-    excludedFields.forEach(el => delete queryObj[el]); // parce que eux ils demandent tous les élements donc ça va pas ensemble avec queryObj qui rend un élément
-    let query = Recipe.find(queryObj); // bien préciser le 'let' (souvent suivi d'un 'if')
-    if (req.query.sort) {
-      const sortBy = req.query.sort.split(",").join(" ");
-      query = query.sort(sortBy);
-    }
-    const recipes = await query;
-    console.log(queryObj);
+    const excludedFields = ["sort", "page", "limit", "fields"];
+    excludedFields.forEach((x) => delete queryObj[x]);
+    let query;
+    query = Recipe.find(queryObj);
+    const page = req.query.page * 1 || 1;
+    const limit = req.query.limit * 1 || 10;
+    const skip = (page - 1) * limit;
+
+    query = query.skip(skip).limit(limit);
+
+    recipes = await query;
+
     if (!recipes) {
       return res.status(404).send("Element not found");
     }
     res.status(200).json({
       status: "success",
       result: recipes.length,
-      recipes: { recipes }
+      recipes: { recipes },
     });
   } catch (error) {
     res.status(401).json({
       result: "fail",
-      data: { error }
+      error: { error: error.message },
     });
   }
 };
@@ -73,16 +77,14 @@ exports.getAll = async (req, res) => {
 exports.getById = async (req, res) => {
   try {
     const id = req.params.id;
-    const recipe = await Recipe.findById(id);
+    const recipe = await Recipe.findById(id).populate("user");
     if (!recipe) {
       return res.status(404).send(`not found`);
     }
-    await recipe.populate("owner").execPopulate();
-
     res.status(200).json({
       status: "success",
       result: recipe.length,
-      recipe: { recipe }
+      recipe: { recipe },
     });
   } catch (error) {
     res.status(400).send(error);
@@ -99,9 +101,9 @@ exports.update = async (req, res) => {
       "duration",
       "difficulty",
       "ingredients",
-      "steps"
+      "steps",
     ];
-    const isValidOperation = updates.every(update =>
+    const isValidOperation = updates.every((update) =>
       allowedUpdates.includes(update)
     );
     if (!isValidOperation) {
@@ -109,15 +111,15 @@ exports.update = async (req, res) => {
     }
     const id = req.params.id;
     const recipe = await Recipe.findByIdAndUpdate(id, req.body, {
-      new: true, // important
-      runValidators: true
+      new: true,
+      runValidators: true,
     });
     if (!recipe) {
       return res.status(404).send(`Element not found`);
     }
     res.status(200).json({
       status: "success",
-      recipe: recipe
+      recipe: recipe,
     });
   } catch (error) {
     res.status(500).send(error);
