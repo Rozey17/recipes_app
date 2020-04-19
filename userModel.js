@@ -23,6 +23,12 @@ const userSchema = new mongoose.Schema({
   },
 });
 
+userSchema.virtual("recipes", {
+  ref: "Recipe",
+  localField: "_id",
+  foreignField: "owner",
+});
+
 userSchema.pre("save", async function (next) {
   const user = this;
 

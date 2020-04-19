@@ -11,8 +11,9 @@ exports.getAll = async (req, res) => {
 
 exports.getById = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
-
+    const user = await User.findById(req.params.id).populate("recipes");
+    //await user.populate("recipes").execPopulate();
+    console.log(user.recipes);
     if (!user) {
       throw new Error("User not found");
     }

@@ -50,8 +50,9 @@ const recipeSchema = new mongoose.Schema(
       enum: ["easy", "medium", "difficult"],
       lowercase: true,
     },
-    user: {
+    owner: {
       type: mongoose.Schema.Types.ObjectId,
+      required: true,
       ref: "User",
     },
   },

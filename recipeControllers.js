@@ -21,7 +21,7 @@ exports.createRecipe = async (req, res) => {
       ingredients: req.body.ingredients,
       cuisine: req.body.cuisine,
       steps: req.body.steps,
-      user: req.user._id,
+      owner: req.user._id, // très IMPORTANT
     });
 
     //   .then(result => {
@@ -77,7 +77,7 @@ exports.getAll = async (req, res) => {
 exports.getById = async (req, res) => {
   try {
     const id = req.params.id;
-    const recipe = await Recipe.findById(id).populate("user");
+    const recipe = await Recipe.findById(id).populate("owner");
     if (!recipe) {
       return res.status(404).send(`not found`);
     }
